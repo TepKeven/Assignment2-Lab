@@ -1,12 +1,12 @@
-import numpy
-import tflearn
-import tensorflow
-import random
-import json
-import pickle
-import os
+import numpy # Convert to Numpy Array
+import tflearn 
+import tensorflow # Train Model
+import random # Generate Random Number
+import json # Convert to JSON
+import pickle # Store AI Model in Pickle File
+import os # Read Path
 
-import nltk
+import nltk # Language Training
 from nltk.stem.lancaster import LancasterStemmer
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -27,6 +27,8 @@ def bag_of_words(s, words):
                 bag[i] = 1
     print(bag)
     return numpy.array(bag)
+
+ ###### Vanneth
 
 @csrf_exempt
 def chat_view(request):
@@ -52,10 +54,10 @@ def chat_view(request):
             with open(f"{model_dir}/data.pickle", "rb") as f:
                 words, labels, training, output = pickle.load(f)
         except:
-            words = []
-            labels = []
-            docs_x = []
-            docs_y = []
+            words = []  # ["How", "are", "you", "?", "What", "is", "up", "?", "Good", "Bye", "mans"]
+            labels = [] # ["Greetings", "Goodbye"]
+            docs_x = [] # [["How", "are", "you", "?"], ["What", "is", "up", "?"], ["Good", "Bye", "mans"]]
+            docs_y = [] # ["Greetings", "Greetings", "Goodbye"]
 
             for intent in data["intents"]:
                 for pattern in intent["patterns"]:
@@ -69,39 +71,41 @@ def chat_view(request):
                 if intent["tag"] not in labels:
                     labels.append(intent["tag"])
 
-            words = [stemmer.stem(w.lower()) for w in words if w != "?"]  # Remove affix from words. Ex: Eats -> Eat or goes > go
+            words = [stemmer.stem(w.lower()) for w in words if w != "?"]  # Remove affix from words. Ex: Eats -> Eat or goes > go  # ["How", "are", "you", "?", "What", "is", "up", "?", "Good", "Bye", "man"]
             print(words)
-            words = sorted(list(set(words)))
+            words = sorted(list(set(words)))    
             print(words)
 
             labels = sorted(labels)
             print(labels)
 
+            ###### Vanneth
+
             training = []
             output = []
 
-            out_empty = [0 for _ in range(len(labels))]
+            out_empty = [0 for _ in range(len(labels))] # [0,0,0]
             print(out_empty)
 
-            for x, doc in enumerate(docs_x):  # doc_x = [[x,y,z], [a,b,c]]
+            for x, doc in enumerate(docs_x):  # doc_x = [["How", "are", "you", "?"], ["What", "is", "up", "?"], ["Good", "Bye", "mans"]]
                 bag = []
 
-                wrds = [stemmer.stem(w.lower()) for w in doc]  # wrds = [x,y,z]
+                wrds = [stemmer.stem(w.lower()) for w in doc]  # wrds = ["Good", "Bye", "man"]
                 print("wrds")
                 print(wrds)
 
-                for w in words:
-                    if w in wrds:
+                for w in words: # ["How", "are", "you", "?", "What", "is", "up", "?", "Good", "Bye", "man"]
+                    if w in wrds:  
                         bag.append(1)
                     else:
                         bag.append(0)
 
                 output_row = out_empty[:]
                 output_row[labels.index(docs_y[x])] = 1
-                print(docs_y[x])
+                print(docs_y[x])    
 
-                training.append(bag)  # list of index keyword in words list represent by 0 or 1
-                output.append(output_row)  # list of 0 or 1 to represent if word belong to this tag
+                training.append(bag)  # list of index keyword in words list represent by 0 or 1 ## [[1,1,1, 0,0,0,0,0,0,0,0,0], []]
+                output.append(output_row)  # list of 0 or 1 to represent if word belong to this tag # [[1,0], []]
                 print(training)
                 print(output)
 
